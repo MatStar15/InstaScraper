@@ -85,7 +85,7 @@ def login(bot, username, password):
     time.sleep(10)
 
 
-def scrape_followers(bot, username):
+def scrape_profile(bot, username, mode):
     bot.get(f'https://www.instagram.com/{username}/')
     time.sleep(3.5)
     WebDriverWait(bot, TIMEOUT).until(EC.presence_of_element_located((By.XPATH, "//a[contains(@href, '/followers')]"))).click()
@@ -137,7 +137,12 @@ def scrape():
         username, password = credentials
 
     user = input("Enter the Instagram usernames you want to scrape (separated by commas): ").split(",")
-
+    mode = 0
+    while mode not in (1, 2, 3):
+        try :
+            mode = int(input("Enter what you want to scrape: \n (1) for followers \n (2) for following \n (3) for both \n"))
+        except:
+            mode = 0
 
     options = webdriver.ChromeOptions()
     # options.add_argument("--headless")
@@ -162,7 +167,7 @@ def scrape():
 
     # for user in usernames:
     user = user.strip()
-    scrape_followers(bot, user)
+    scrape_profile(bot, user, mode)
 
     bot.quit()
 
