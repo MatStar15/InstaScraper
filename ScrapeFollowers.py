@@ -87,9 +87,18 @@ def login(bot, username, password):
 def scrape_profile(bot, username, mode):
     bot.get(f'https://www.instagram.com/{username}/')
     time.sleep(3.5)
-    WebDriverWait(bot, TIMEOUT).until(EC.presence_of_element_located((By.XPATH, "//a[contains(@href, '/followers')]"))).click()
+
+    match mode:
+        case 1:
+            subject = 'followers'
+        case 2:
+            subject = 'following'
+
+
+
+    WebDriverWait(bot, TIMEOUT).until(EC.presence_of_element_located((By.XPATH, f"//a[contains(@href, '/{subject}')]"))).click()
     time.sleep(2)
-    print(f"[Info] - Scraping followers for {username}...")
+    print(f"[Info] - Scraping {subject} for {username}...")
 
     users = set()
 
@@ -108,22 +117,22 @@ def scrape_profile(bot, username, mode):
     #     time.sleep(1)
 
     scroll_down(bot)
-    followers = bot.find_elements(By.XPATH, "//a[contains(@role, 'link') and not(contains('|/|/explore/|/reels/|/direct/inbox/|', concat('|', @href, '|')))]")
+    elements = bot.find_elements(By.XPATH, "//a[contains(@role, 'link') and not(contains('|/|/explore/|/reels/|/direct/inbox/|', concat('|', @href, '|')))]")
     
     #remove every other entry since they all appear twice, and self (start from index 3):
     # followers = followers[3::2]
-    print(f"loaded followers: {len(followers)} \n list of followers (contains duplicates): {followers} \n")
+    print(f"loaded followers: {len(elements)} \n list of {subject} (contains duplicates): {elements} \n")
 
-    for i in followers:
-        href = i.get_attribute('href')
+    for entry in elements:
+        href = entry.get_attribute('href')
         if href:
             # print(f"link:{i.get_attribute('href')} of {i}")
-            users.add(i.get_attribute('href').split("/")[3])
+            users.add(entry.get_attribute('href').split("/")[3])
         else:
             continue
     print(f"[Info] - loaded users: {len(users)}")
-    print(f"[Info] - Saving followers for {username}...")
-    with open(f'{username}_followers.txt', 'a') as file:
+    print(f"[Info] - Saving {subject} for {username}...")
+    with open(f'{username}_{subject}.txt', 'a') as file:
         file.write("\n".join(users) + "\n")
 
 
@@ -166,7 +175,13 @@ def scrape():
 
     # for user in usernames:
     user = user.strip()
-    scrape_profile(bot, user, mode)
+
+    
+    if not mode == 3:
+        scrape_profile(bot, user, mode)
+    else:
+        scrape_profile(bot, user, 1)
+        scrape_profile(bot, user, 2)
 
     bot.quit()
 
