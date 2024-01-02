@@ -10,7 +10,7 @@ from webdriver_manager.chrome import ChromeDriverManager as CM
 from selenium.common.exceptions import NoSuchElementException
 
 
-def scroll_down(bot):
+def scroll_down(bot): #https://stackoverflow.com/questions/48850974/selenium-scroll-to-end-of-page-in-dynamically-loading-webpage
     """A method for scrolling the page."""
 
     # Get scroll height.
@@ -32,7 +32,6 @@ def scroll_down(bot):
             break
 
         last_height = new_height
-
 
 
 def save_credentials(username, password):
