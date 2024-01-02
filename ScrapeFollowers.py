@@ -137,12 +137,7 @@ def scrape():
         username, password = credentials
 
     user = input("Enter the Instagram usernames you want to scrape (separated by commas): ").split(",")
-    mode = 0
-    while mode not in (1, 2, 3):
-        try :
-            mode = int(input("Enter what you want to scrape: \n (1) for followers \n (2) for following \n (3) for both \n"))
-        except:
-            mode = 0
+
 
     options = webdriver.ChromeOptions()
     # options.add_argument("--headless")
@@ -167,7 +162,7 @@ def scrape():
 
     # for user in usernames:
     user = user.strip()
-    scrape_followers(bot, user, mode)
+    scrape_followers(bot, user)
 
     bot.quit()
 
