@@ -144,7 +144,7 @@ def scrape():
     else:
         username, password = credentials
 
-    user = input("Enter the Instagram usernames you want to scrape (separated by commas): ").split(",")
+    user = input("Enter the Instagram username you want to scrape: ")
     mode = 0
     while mode not in (1, 2, 3):
         try :
