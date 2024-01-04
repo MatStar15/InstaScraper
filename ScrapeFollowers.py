@@ -40,7 +40,7 @@ def save_credentials(username, password):
 
 
 def load_credentials():
-    print(str(os.getcwd()))
+    # print(str(os.getcwd()))
     if not os.path.exists('credentials.txt'):
         return None
 
@@ -115,13 +115,15 @@ def scrape_profile(bot, username, mode):
     # for i in range(scrolls):
     #     ActionChains(bot).send_keys(Keys.END).perform()
     #     time.sleep(1)
-
+    print(f"[Info] - letting all {subject} load")
     scroll_down(bot)
+
+    print(f"[Info] - Scraping")
     elements = bot.find_elements(By.XPATH, "//a[contains(@role, 'link') and not(contains('|/|/explore/|/reels/|/direct/inbox/|', concat('|', @href, '|')))]")
     
     #remove every other entry since they all appear twice, and self (start from index 3):
     # followers = followers[3::2]
-    print(f"loaded followers: {len(elements)} \n list of {subject} (contains duplicates): {elements} \n")
+    print(f"loaded followers: {len(elements)} \n ") #list of {subject} (contains duplicates): {elements} \n
 
     for entry in elements:
         href = entry.get_attribute('href')
