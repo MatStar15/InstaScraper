@@ -17,14 +17,13 @@ def load(username, file_name):
 
 
 def write(users, file_name):
-    with open(file_name, 'a') as file:
+    with open(file_name, 'w') as file:
         file.write("\n".join(users) + "\n")
         print(f"[Info] - saving {file_name}")
 
 
 def compare():
     username = input("Enter the Instagram username you want to compare: ")
-
 
     
     following = load(username, f'{username}_following.txt')

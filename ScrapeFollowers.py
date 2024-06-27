@@ -10,6 +10,10 @@ from webdriver_manager.chrome import ChromeDriverManager as CM
 from selenium.common.exceptions import NoSuchElementException
 
 
+FOLLOWERS_XPATH = "/html/body/div[6]/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[3]"
+FOLLOING_XPATH = "/html/body/div[6]/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[4]"
+TIMEOUT = 15
+
 def scroll_down(bot): #https://stackoverflow.com/questions/48850974/selenium-scroll-to-end-of-page-in-dynamically-loading-webpage
     """A method for scrolling the page."""
 
@@ -32,6 +36,48 @@ def scroll_down(bot): #https://stackoverflow.com/questions/48850974/selenium-scr
             break
 
         last_height = new_height
+
+
+def scroll_down_dialog(bot, what): #https://stackoverflow.com/questions/48850974/selenium-scroll-to-end-of-page-in-dynamically-loading-webpage and https://stackoverflow.com/questions/53971506/scroll-to-the-bottom-of-a-dynamically-loading-dialog-box-in-python
+    """A method for scrolling the div."""
+
+    if what == "followers":
+        element = f"document.evaluate(\"{FOLLOWERS_XPATH}\", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue"
+    elif what == "following":
+        element = f"document.evaluate(\"{FOLLOING_XPATH}\", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue"
+
+    else:
+        print("Invalid argument")
+        return
+
+    # Get scroll height.
+    last_height = bot.execute_script(f"return {element}.scrollHeight")
+
+    found = True
+
+    while True:
+
+        # Scroll down to the bottom.
+        bot.execute_script(f"{element}.scrollTo(0, {element}.scrollHeight);")
+
+        # Wait to load the page.
+        time.sleep(0.5)
+
+        # Calculate new scroll height and compare with last scroll height.
+        new_height = bot.execute_script(f"return {element}.scrollHeight")
+
+
+        # print(f"new height: {new_height} last height: {last_height}")
+
+        found = not (bot.find_elements(By.XPATH, "//*[name() = \"svg\" and @aria-label=\"Loading...\"]") == [])
+
+
+        if new_height == last_height:
+            if not found:
+                break
+
+        last_height = new_height
+    
 
 
 def save_credentials(username, password):
@@ -60,17 +106,24 @@ def prompt_credentials():
 
 
 def login(bot, username, password):
-    bot.get('https://www.instagram.com/accounts/login/')
-    time.sleep(2)
+    bot.get('https://business.instagram.com/')
 
     # Check if cookies need to be accepted
     try:
-        element = bot.find_element(By.XPATH, '//*[contains(text(), "Allow all cookies")]')
+        print("[Info] - Accepting cookies...")
+        element = bot.find_element(By.XPATH, '//*[@id="allow_button"]')
         element.click()
-        time.sleep(2)
+        time.sleep(3)
     except NoSuchElementException:
         print("[Info] - Instagram did not require to accept cookies this time.")
+    except Exception as e:
+        print(f"[Error] - {e}")
+
+
     print("[Info] - Logging in...")
+
+    bot.get('https://www.instagram.com/accounts/login/')
+
     username_input = WebDriverWait(bot, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "input[name='username']")))
     password_input = WebDriverWait(bot, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "input[name='password']")))
 
@@ -81,12 +134,22 @@ def login(bot, username, password):
 
     login_button = WebDriverWait(bot, 2).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[type='submit']")))
     login_button.click()
-    time.sleep(10)
+
+    time.sleep(5)
+    if("https://www.instagram.com/accounts/login/two_factor" in bot.current_url):
+        print("[Info] - Waiting for 2FA code...")
+        while(bot.current_url != "https://www.instagram.com/"):
+            time.sleep(1)
+        print("[Info] - Proceding.")
+
+    print("[Info] - Logged in.")
+
+    # WebDriverWait(bot, 1).until(lambda d : EC.title_is("https://www.instagram.com/#reactivated"))
 
 
 def scrape_profile(bot, username, mode):
     bot.get(f'https://www.instagram.com/{username}/')
-    time.sleep(3.5)
+    time.sleep(2)
 
     match mode:
         case 1:
@@ -116,14 +179,14 @@ def scrape_profile(bot, username, mode):
     #     ActionChains(bot).send_keys(Keys.END).perform()
     #     time.sleep(1)
     print(f"[Info] - letting all {subject} load")
-    scroll_down(bot)
+    scroll_down_dialog(bot, subject)
 
     print(f"[Info] - Scraping")
     elements = bot.find_elements(By.XPATH, "//a[contains(@role, 'link') and not(contains('|/|/explore/|/reels/|/direct/inbox/|', concat('|', @href, '|')))]")
     
     #remove every other entry since they all appear twice, and self (start from index 3):
     # followers = followers[3::2]
-    print(f"loaded followers: {len(elements)} \n ") #list of {subject} (contains duplicates): {elements} \n
+    print(f"[Info] - Loaded duplicated followers: {len(elements)} \n ") #list of {subject} (contains duplicates): {elements} \n
 
     for entry in elements:
         href = entry.get_attribute('href')
@@ -132,9 +195,10 @@ def scrape_profile(bot, username, mode):
             users.add(entry.get_attribute('href').split("/")[3])
         else:
             continue
-    print(f"[Info] - loaded users: {len(users)}")
+    users = set(users)
+    print(f"[Info] - Actual users: {len(users)}")
     print(f"[Info] - Saving {subject} for {username}...")
-    with open(f'{username}_{subject}.txt', 'a') as file:
+    with open(f'{username}_{subject}.txt', 'w') as file:
         file.write("\n".join(users) + "\n")
 
 
@@ -158,18 +222,22 @@ def scrape():
     # options.add_argument("--headless")
     options.add_argument('--no-sandbox')
     options.add_argument("--log-level=3")
+    options.add_argument("--headless")
     #mobile_emulation = {
         # "userAgent": "Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/90.0.1025.166 Mobile Safari/535.19"}
     
     mobile_emulation = {
 
-   "deviceMetrics": { "width": 360, "height": 640, "pixelRatio": 3.0 },
+   "deviceMetrics": { "width": 620, "height": 1280, "pixelRatio": 1 },
 
    "userAgent": "Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19",
 
    "clientHints": {"platform": "Android", "mobile": True} }
+    
 
-    options.add_experimental_option("mobileEmulation", mobile_emulation)
+    
+
+    #options.add_experimental_option("mobileEmulation", mobile_emulation)
 
     bot = webdriver.Chrome(options= options)
 
@@ -189,5 +257,4 @@ def scrape():
 
 
 if __name__ == '__main__':
-    TIMEOUT = 15
     scrape()
