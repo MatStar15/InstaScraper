@@ -41,6 +41,8 @@ def scroll_down(bot): #https://stackoverflow.com/questions/48850974/selenium-scr
 def scroll_down_dialog(bot, what): #https://stackoverflow.com/questions/48850974/selenium-scroll-to-end-of-page-in-dynamically-loading-webpage and https://stackoverflow.com/questions/53971506/scroll-to-the-bottom-of-a-dynamically-loading-dialog-box-in-python
     """A method for scrolling the div."""
 
+    time.sleep(5)
+
     if what == "followers":
         element = f"document.evaluate(\"{FOLLOWERS_XPATH}\", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue"
     elif what == "following":
@@ -61,7 +63,7 @@ def scroll_down_dialog(bot, what): #https://stackoverflow.com/questions/48850974
         bot.execute_script(f"{element}.scrollTo(0, {element}.scrollHeight);")
 
         # Wait to load the page.
-        time.sleep(0.5)
+        time.sleep(0.5) #FIXME doesn't work with slow connections
 
         # Calculate new scroll height and compare with last scroll height.
         new_height = bot.execute_script(f"return {element}.scrollHeight")
@@ -138,8 +140,8 @@ def login(bot, username, password):
     time.sleep(5)
     if("https://www.instagram.com/accounts/login/two_factor" in bot.current_url):
         print("[Info] - Waiting for 2FA code...")
-        while(bot.current_url != "https://www.instagram.com/"):
-            time.sleep(1)
+        while(bot.current_url != "https://www.instagram.com/"): 
+            time.sleep(1) # TODO: add a way to input the 2FA code in the console so that the browser can be headless
         print("[Info] - Proceding.")
 
     print("[Info] - Logged in.")
@@ -222,7 +224,11 @@ def scrape():
     # options.add_argument("--headless")
     options.add_argument('--no-sandbox')
     options.add_argument("--log-level=3")
-    options.add_argument("--headless")
+
+    # TODO: fix 2FA and make headless
+    #options.add_argument("--headless")
+    
+
     #mobile_emulation = {
         # "userAgent": "Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/90.0.1025.166 Mobile Safari/535.19"}
     
