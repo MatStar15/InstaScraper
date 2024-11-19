@@ -12,6 +12,7 @@ from selenium.common.exceptions import NoSuchElementException
 
 FOLLOWERS_XPATH = "/html/body/div[6]/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[3]"
 FOLLOING_XPATH = "/html/body/div[6]/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[4]"
+CREDENTIALS_FILE = 'credentials.txt'
 TIMEOUT = 15
 
 def scroll_down(bot): #https://stackoverflow.com/questions/48850974/selenium-scroll-to-end-of-page-in-dynamically-loading-webpage
@@ -83,16 +84,16 @@ def scroll_down_dialog(bot, what): #https://stackoverflow.com/questions/48850974
 
 
 def save_credentials(username, password):
-    with open('credentials.txt', 'w') as file:
+    with open(CREDENTIALS_FILE, 'w') as file:
         file.write(f"{username}\n{password}")
 
 
 def load_credentials():
     # print(str(os.getcwd()))
-    if not os.path.exists('credentials.txt'):
+    if not os.path.exists(CREDENTIALS_FILE):
         return None
 
-    with open('credentials.txt', 'r') as file:
+    with open(CREDENTIALS_FILE, 'r') as file:
         lines = file.readlines()
         if len(lines) >= 2:
             return lines[0].strip(), lines[1].strip()
@@ -138,9 +139,9 @@ def login(bot, username, password):
     login_button.click()
 
     time.sleep(5)
-    if("https://www.instagram.com/accounts/login/two_factor" in bot.current_url):
+    if "https://www.instagram.com/accounts/login/two_factor" in bot.current_url:
         print("[Info] - Waiting for 2FA code...")
-        while(bot.current_url != "https://www.instagram.com/"): 
+        while bot.current_url != "https://www.instagram.com/":
             time.sleep(1) # TODO: add a way to input the 2FA code in the console so that the browser can be headless
         print("[Info] - Proceding.")
 

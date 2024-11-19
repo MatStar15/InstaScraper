@@ -1,20 +1,6 @@
 import os
-from compare import load, write;
+from utils import *
 
-IGNORE = ['__pycache__','.git', '.vscode' ]
-
-def getDates(username): #FIXME: for some reason does not recognizes direcotries anymore
-    path =  "./" + username
-    # print("listdir: " ,os.listdir(path))
-            
-    dates = ([name for name in os.listdir(f"./{username}") if (os.path.isdir(f"./{name}") or not name.endswith(".txt"))])
-    print("avaliable dates: (as day month year)\n", dates)
-    return dates
-
-def getUsers():
-    users = ([name for name in os.listdir(".") if( os.path.isdir(name) and name not in IGNORE)])
-    print("avaliable users:\n", users)
-    return users
 
 
 def getInput():
