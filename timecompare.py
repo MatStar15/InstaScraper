@@ -45,10 +45,10 @@ def getInput():
     return username, date1, date2
             
 def timeCompare(username, date1, date2):
-    following1 = load(username, f'{username}\\{date1}\\{username}_following.txt')
-    followers1 = load(username, f'{username}\\{date1}\\{username}_followers.txt')
-    following2 = load(username, f'{username}\\{date2}\\{username}_following.txt')
-    followers2 = load(username, f'{username}\\{date2}\\{username}_followers.txt')
+    following1 = load(username, date1, f'{username}_following.txt')
+    followers1 = load(username, date1, f'{username}_followers.txt')
+    following2 = load(username, date2, f'{username}_following.txt')
+    followers2 = load(username, date2, f'{username}_followers.txt')
 
     if followers1 and following1 and followers2 and following2:
         gained_followers = followers2.difference(followers1)
@@ -56,10 +56,10 @@ def timeCompare(username, date1, date2):
         started_following = following2.difference(following1)
         stopped_following = following1.difference(following2)
 
-        write(gained_followers, f'{username}\\{date2}_{date1}_gained_followers.txt')
-        write(lost_followers, f'{username}\\{date2}_{date1}_lost_followers.txt')
-        write(started_following, f'{username}\\{date2}_{date1}_started_following.txt')
-        write(stopped_following, f'{username}\\{date2}_{date1}_stopped_following.txt')
+        write(username, date2, f'{date1}_gained_followers.txt', gained_followers)
+        write(username, date2, f'{date1}_lost_followers.txt', lost_followers)
+        write(username, date2, f'{date1}_started_following.txt', started_following)
+        write(username, date2, f'{date1}_stopped_following.txt', stopped_following)
     else:
         print("Error loading files")
 

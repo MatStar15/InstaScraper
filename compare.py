@@ -1,25 +1,38 @@
 import os
+from datetime import datetime
 
-def load(username, file_name):
-    if not os.path.exists(file_name):
-        print(f"[Error] - {file_name} does not exists")
+
+def load(username, date, file_name):
+    file_path = os.path.join(username, date, file_name)
+    if not os.path.exists(file_path):
+        print(f"[Error] - {file_path} does not exist")
         return None
 
     users = set()
-
-    with open(file_name, 'r') as file:
+    with open(file_path, 'r') as file:
         lines = file.readlines()
         for line in lines:
             users.add(line.strip(' \n'))
-        return users
+    return users
 
-    return None
+# def write(users, file_name):
+#     date_folder = datetime.now().strftime("%Y-%m-%d")
+#     user_folder = os.path.join(date_folder, file_name.split('_')[0])
+#     if not os.path.exists(user_folder):
+#         os.makedirs(user_folder)
+#     file_path = os.path.join(user_folder, file_name)
+#     with open(file_path, 'w') as file:
+#         file.write("\n".join(users) + "\n")
+#         print(f"[Info] - saving {file_path}")
 
-
-def write(users, file_name):
-    with open(file_name, 'w') as file:
-        file.write("\n".join(users) + "\n")
-        print(f"[Info] - saving {file_name}")
+def write(user, date, file_name, userlist):
+    date_folder = os.path.join(user, date)
+    if not os.path.exists(date_folder):
+        os.makedirs(date_folder)
+    file_path = os.path.join(user, date, file_name)
+    with open(file_path, 'w') as file:
+        file.write("\n".join(userlist))
+        print(f"[Info] - saving {file_path}")
 
 
 def compare():
